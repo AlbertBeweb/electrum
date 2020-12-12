@@ -91,6 +91,17 @@ Builder.load_string('''
                     action: root.change_password
                 CardSeparator
                 SettingsItem:
+                    status: _('Gossip') if app.use_gossip else _('Trampoline')
+                    title: _('Lightning Routing') + ': ' + self.status
+                    description: _("Use trampoline routing or gossip.")
+                    message:
+                        _('Lightning payments require finding a path through the lightning network.')\
+                        + ' ' + ('You may use trampoline or gossip routing.')\
+                        + ' ' + ('With trampoline routing, you can only open channels with trampoline nodes.')\
+                        + ' ' + ('Gossip routing uses quite some bandwidth and storage, and is not recommended on mobile devices.')
+                    action: partial(root.boolean_dialog, 'use_gossip', _('Enable Gossip'), self.message)
+                CardSeparator
+                SettingsItem:
                     status: _('Yes') if app.android_backups else _('No')
                     title: _('Backups') + ': ' + self.status
                     description: _("Backup wallet to external storage.")
