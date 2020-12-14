@@ -369,6 +369,7 @@ def process_onion_packet(onion_packet: OnionPacket, associated_data: bytes,
     # trampoline
     trampoline_onion_packet = hop_data.payload.get('trampoline_onion_packet')
     if trampoline_onion_packet:
+        print('processing trampoline onion packet', trampoline_onion_packet)
         top_version = trampoline_onion_packet.get('version')
         top_public_key = trampoline_onion_packet.get('public_key')
         top_hops_data = trampoline_onion_packet.get('hops_data')
@@ -379,7 +380,9 @@ def process_onion_packet(onion_packet: OnionPacket, associated_data: bytes,
             hops_data=top_hops_data_fd.read(TRAMPOLINE_HOPS_DATA_SIZE),
             hmac=top_hmac
         )
-        return process_onion_packet(trampoline_onion_packet, associated_data, our_onion_private_key)
+        p = process_onion_packet(trampoline_onion_packet, associated_data, our_onion_private_key)
+        print('processed trampoline onion packet', p)
+        return p
 
     # calc next ephemeral key
     blinding_factor = sha256(onion_packet.public_key + shared_secret)

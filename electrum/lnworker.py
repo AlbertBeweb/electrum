@@ -222,7 +222,8 @@ class LNWorker(Logger, NetworkRetryManager[LNPeerAddr]):
         self.features |= LnFeatures.OPTION_STATIC_REMOTEKEY_OPT
         self.features |= LnFeatures.VAR_ONION_OPT
         self.features |= LnFeatures.PAYMENT_SECRET_OPT
-        #self.features |= LnFeatures.OPTION_TRAMPOLINE_ROUTING_REQ
+        self.features |= LnFeatures.OPTION_TRAMPOLINE_ROUTING_OPT # for invoices
+        #self.features |= LnFeatures.OPTION_TRAMPOLINE_ROUTING_REQ # not used in INIT yet
 
         util.register_callback(self.on_proxy_changed, ['proxy_set'])
 
