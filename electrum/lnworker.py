@@ -1171,10 +1171,10 @@ class LNWallet(LNWorker):
         invoice_routing_info = self.encode_routing_info(decoded_invoice)
         if attempt >= len(TRAMPOLINE_FEES):
             raise NoPathFound()
-        trampoline_addr = TRAMPOLINE_NODES[0]
+        trampoline_addr = TRAMPOLINE_NODES[0] # 0 is acinq
         trampoline_node_id = trampoline_addr.pubkey
         params = TRAMPOLINE_FEES[attempt]
-        self.logger.info(f'create_trampoline_route: attempt={attempt}, is legacy: {is_legacy}')
+        self.logger.info(f'create_trampoline_route: attempt={attempt}, is legacy: {is_legacy}, params: {params}')
         channels = self.channels_for_peer(trampoline_node_id)
         if not channels:
             return
@@ -1208,14 +1208,6 @@ class LNWallet(LNWorker):
         )
         # trampoline onion for recipient. (legacy recipients need an onion)
         route.append(
-            RouteEdge(
-                node_id=invoice_pubkey,
-                short_channel_id=0,
-                fee_base_msat=0,
-                fee_proportional_millionths=0,
-                cltv_expiry_delta=0,
-                node_features=invoice_features)
-            if is_legacy else
             TrampolineEdge(
                 node_id=invoice_pubkey,
                 short_channel_id=0,

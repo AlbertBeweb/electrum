@@ -1108,19 +1108,23 @@ class Peer(Logger):
         # detect trampoline hops
         payment_path_pubkeys = [x.node_id for x in route]
         num_hops = len(payment_path_pubkeys)
-        for i in range(num_hops-1, -1, -1):
+        for i in range(num_hops):
             route_edge = route[i]
             if route_edge.is_trampoline():
                 self.logger.info(f'trampoline hop at position {i}')
-                # create trampoline onion
-                #hops_data[i].payload.pop('short_channel_id')
                 if route_edge.outgoing_node_id:
                     hops_data[i].payload["outgoing_node_id"] = {"outgoing_node_id":route_edge.outgoing_node_id}
                 if route_edge.invoice_features:
                     hops_data[i].payload["invoice_features"] = {"invoice_features":route_edge.invoice_features}
                 if route_edge.invoice_routing_info:
                     hops_data[i].payload["invoice_routing_info"] = {"invoice_routing_info":route_edge.invoice_routing_info}
-                self.logger.info('inner onion: {hops_data[i:]}')
+
+        # create trampoline onion
+        for i in range(num_hops):
+            route_edge = route[i]
+            if route_edge.is_trampoline():
+                self.logger.info(f'first trampoline hop at position {i}')
+                self.logger.info(f'inner onion: {hops_data[i:]}')
                 trampoline_session_key = os.urandom(32)
                 trampoline_onion = new_onion_packet(payment_path_pubkeys[i:], trampoline_session_key, hops_data[i:], associated_data=payment_hash, trampoline=True)
                 # drop hop_data
@@ -1142,9 +1146,11 @@ class Peer(Logger):
                     "hops_data": trampoline_onion.hops_data,
                     "hmac": trampoline_onion.hmac
                 }
+                break
         # create onion packet
-        self.logger.info(f"starting payment. len(route)={len(hops_data)}.")
         onion = new_onion_packet(payment_path_pubkeys, session_key, hops_data, associated_data=payment_hash) # must use another sessionkey
+
+        self.logger.info(f"starting payment. len(route)={len(hops_data)}.")
         # create htlc
         if cltv > local_height + lnutil.NBLOCK_CLTV_EXPIRY_TOO_FAR_INTO_FUTURE:
             raise PaymentFailure(f"htlc expiry too far into future. (in {cltv-local_height} blocks)")
